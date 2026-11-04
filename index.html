@@ -669,6 +669,7 @@ function vSettings() {
     </div></section>
     <section class="sect"><h2>Fil</h2><div class="body"><div class="kv"><span class="k">Öppnad fil</span><span class="v">${esc(S.fileName || '–')}</span></div>
       <button class="btn ghost block" data-a="open">${I.file}Öppna en annan Excel-fil</button>
+      <button class="btn ghost block" data-a="popen">${I.people}Byt till plutonsläge (flera gruppfiler)</button>
       <p class="small muted" style="margin:0">Appen skickar aldrig något över internet. Uppgifterna finns bara på den här enheten och i filerna du själv delar.</p></div></section>`;
   return shell('Inställningar', body);
 }
@@ -744,7 +745,8 @@ function vPSettings() {
       : `<div class="kv"><span class="k">Lagring</span><span class="v">Sparas inte på enheten</span></div><button class="btn ghost block" data-a="gopin">${I.lock}Spara krypterat med PIN-kod</button>`}
       <button class="btn danger block" data-a="wipe">Radera all data från enheten</button></div></section>
     <section class="sect"><h2>Läge</h2><div class="body"><div class="kv"><span class="k">Nuvarande läge</span><span class="v">Pluton (läsläge)</span></div>
-      <p class="small muted" style="margin:0">I plutonsläget kan du läsa alla gruppers uppgifter. Ändringar görs i gruppernas egna filer. Vill du byta till gruppläge raderar du data från enheten och öppnar en gruppfil.</p></div></section>
+      <p class="small muted" style="margin:0">I plutonsläget kan du läsa alla gruppers uppgifter. Ändringar görs i gruppernas egna filer.</p>
+      <button class="btn ghost block" data-a="open">${I.file}Byt till gruppläge (öppna en gruppfil)</button></div></section>
     <p class="small muted" style="margin:0">Appen skickar aldrig något över internet. Uppgifterna finns bara på den här enheten och i filerna du själv delar.</p>`;
   return shell('Inställningar', body);
 }
@@ -830,7 +832,9 @@ function saveDraft() {
 
 document.addEventListener('click', async e => {
   const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a;
-  if (a === 'open') { const fi = $('#fileIn'); fi.value = ''; fi.multiple = false; delete fi.dataset.mode; fi.click(); }
+  if (a === 'open' && S.view !== 'settings') { const fi = $('#fileIn'); fi.value = ''; fi.multiple = false; delete fi.dataset.mode; fi.click(); }
+  else if ((a === 'popen' || a === 'open') && S.view === 'settings' && !await dialog({ title: a === 'popen' ? 'Byta till plutonsläge?' : 'Byta till gruppläge?', text: (S.mode === 'grupp' ? 'Gruppfilen som nu finns i appen ersätts på den här enheten.' + (S.model && S.model.dirty ? ' Du har ändringar som inte är delade. Spara och dela dem först, annars försvinner de.' : '') : 'Gruppfilerna som nu finns i appen ersätts på den här enheten.') + ' Filerna i Signal påverkas inte.', ok: 'Fortsätt' })) { return; }
+  if (a === 'open' && S.view === 'settings') { const fi = $('#fileIn'); fi.value = ''; fi.multiple = false; delete fi.dataset.mode; fi.click(); }
   else if (a === 'popen' || a === 'padd') { const fi = $('#fileIn'); fi.value = ''; fi.multiple = true; fi.dataset.mode = 'pluton'; fi.click(); }
   else if (a === 'pdemo') {
     const bytes = b64dec(DEMO_B64); const names = [['1:a grp', ['Adam', 'Bea', 'Carl', 'Dina', 'Emil', 'Frida', 'Gustav', 'Hanna', 'Isak'], ['Alm', 'Björk', 'Ceder', 'Dun', 'Ek', 'Fur', 'Gran', 'Hassel', 'Ilex']], ['2:a grp', ['Jonas', 'Klara', 'Leo', 'Moa', 'Nils', 'Olga', 'Per', 'Rut', 'Sixten'], ['Jern', 'Krok', 'Lind', 'Mo', 'Nyberg', 'Ohlin', 'Pihl', 'Rask', 'Sund']], ['Steff', ['Tea', 'Ulf', 'Vera', 'Wilma', 'Axel', 'Berit', 'Ceasar', 'Doris', 'Elof'], ['Tall', 'Uddén', 'Vik', 'Wall', 'Ahl', 'Bäck', 'Cronholm', 'Dahlén', 'Ström']]];
