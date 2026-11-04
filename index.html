@@ -386,7 +386,7 @@ async function buildXlsx() {
   });
   await edit('Inställningar', ix => {
     setCell(ix, 'C3', m.settings.VarnMan); setCell(ix, 'C4', m.settings.KpMan); setCell(ix, 'C5', m.settings.KpVarn);
-    setCell(ix, 'B9', 'Gruppens namn (t.ex. FB, GC, Steff)'); setCell(ix, 'C9', m.groupName || null);
+    setCell(ix, 'B9', 'Gruppens namn (t.ex. FA, FB, EB)'); setCell(ix, 'C9', m.groupName || null);
     setCell(ix, 'B12', 'Pluton (t.ex. 1:a pluton)'); setCell(ix, 'C12', m.plutonName || null);
     for (let i = 0; i < 40; i++) setCell(ix, 'E' + (3 + i), m.fbTypes[i] ?? null);
   });
@@ -700,7 +700,7 @@ function vSave() {
 }
 function vSettings() {
   const st = S.model.settings;
-  const body = `<section class="sect"><h2>Grupp</h2><div class="body"><label class="f" for="gname">Gruppens namn (t.ex. FB, GC, Steff)<input id="gname" class="inp" value="${esc(S.model.groupName || '')}" placeholder="Skriv gruppens namn"></label>
+  const body = `<section class="sect"><h2>Grupp</h2><div class="body"><label class="f" for="gname">Gruppens namn (t.ex. FA, FB, EB)<input id="gname" class="inp" value="${esc(S.model.groupName || '')}" placeholder="Skriv gruppens namn"></label>
       <label class="f" for="pname">Pluton (t.ex. 1:a pluton)<input id="pname" class="inp" value="${esc(S.model.plutonName || '')}" placeholder="Lämna tomt om ni inte har pluton"></label>
       <p class="small muted" style="margin:0">Namnen följer med i filen. Ledningen ser då gruppen under rätt pluton när alla filer läses in.</p></div></section>
     <section class="sect"><h2>Varningar</h2><div class="body">
@@ -932,7 +932,7 @@ async function addGroupFiles(files, demo = false) {
     try {
       const model = await loadModel(f.bytes); delete model.dirty;
       let name = f.name || model.groupName;
-      if (!name) { const r = await dialog({ title: 'Vilken grupp?', text: `Filen ${f.fileName} saknar gruppnamn. Skriv gruppens namn, t.ex. FB eller GC.`, ok: 'Lägg till', html: '<input class="inp" id="dlgIn" aria-label="Gruppens namn">' }); if (!r || !r[0].trim()) continue; name = r[0].trim(); }
+      if (!name) { const r = await dialog({ title: 'Vilken grupp?', text: `Filen ${f.fileName} saknar gruppnamn. Skriv gruppens namn, t.ex. FA, FB eller EB.`, ok: 'Lägg till', html: '<input class="inp" id="dlgIn" aria-label="Gruppens namn">' }); if (!r || !r[0].trim()) continue; name = r[0].trim(); }
       const pluton = model.plutonName || '';
       const old = S.groups.find(g => g.name.toLowerCase() === name.toLowerCase() && (g.pluton || '').toLowerCase() === pluton.toLowerCase());
       const g = { id: old ? old.id : uid(), name, pluton, fileName: f.fileName, bytes: f.bytes, model };
@@ -1020,7 +1020,7 @@ document.addEventListener('click', async e => {
     if (r && r[0] && r[0].trim()) { g.name = r[0].trim(); g.pluton = (r[1] || '').trim(); sortGroups(); persistSoon(); render(); }
   }
   else if (a === 'newgroup') {
-    const r = await dialog({ title: 'Ny grupp', text: 'Skriv gruppens namn, t.ex. FB, GC eller Steff. Sedan lägger du till personerna en och en.', ok: 'Skapa', html: '<input class="inp" id="dlgIn" aria-label="Gruppens namn" placeholder="Gruppens namn">' });
+    const r = await dialog({ title: 'Ny grupp', text: 'Skriv gruppens namn, t.ex. FA, FB eller EB. Sedan lägger du till personerna en och en.', ok: 'Skapa', html: '<input class="inp" id="dlgIn" aria-label="Gruppens namn" placeholder="Gruppens namn">' });
     if (!r || !r[0].trim()) return;
     const model = await loadModel(b64dec(DEMO_B64)); model.people = []; model.fb = []; model.groupName = r[0].trim(); model.dirty = true;
     S.mode = 'grupp'; S.groups = []; S.model = model; S.fileBytes = b64dec(DEMO_B64); S.fileName = 'Ny grupp (' + model.groupName + ')'; S.demo = false; S.q = ''; S.filter = 'alla'; S.komp = '';
