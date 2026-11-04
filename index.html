@@ -356,10 +356,8 @@ async function buildXlsx() {
   });
   const names = m.people.map(fullName);
   const K = (await readSheet(book, 'Personkort')) || {}, Q = (await readSheet(book, 'Kompakt')) || {};
-  if (names.length) {
-    if (!names.includes(K.C3)) await edit('Personkort', ix => setCell(ix, 'C3', names[0]));
-    if (!names.includes(Q.B1)) await edit('Kompakt', ix => setCell(ix, 'B1', names[0]));
-  }
+  if (!names.includes(K.C3)) await edit('Personkort', ix => setCell(ix, 'C3', names[0] || null));
+  if (!names.includes(Q.B1)) await edit('Kompakt', ix => setCell(ix, 'B1', names[0] || null));
   // table ranges
   const lastCol = m.cols[m.cols.length - 1].L;
   for (const f of Object.keys(zip.files).filter(n => /^xl\/tables\/[^/]+\.xml$/.test(n))) {
@@ -491,6 +489,7 @@ function vStart() {
     <h1>Personalliggare</h1>
     <p class="muted" style="margin:0">Öppna gruppens Excel-fil för att se personkort, varningar och översikt. Allt stannar på den här enheten och inget skickas över internet.</p>
     <button class="btn primary block" data-a="open">${I.file}Öppna Excel-fil</button>
+    <button class="btn ghost block" data-a="newgroup">${I.plus}Skapa ny grupp från början</button>
     <button class="btn ghost block" data-a="demo">Prova med exempeldata</button>
     <div class="card" style="display:flex;flex-direction:column;gap:10px"><b>Pluton eller kompani?</b><span class="small muted">Läs in alla gruppers filer på en gång och få en samlad överblick, gruppvis eller per person.</span>
       <button class="btn primary block" data-a="popen">${I.people}Öppna gruppfiler</button>
@@ -551,7 +550,7 @@ function vList() {
       <button class="chip" data-a="filter" data-v="varn" aria-pressed="${S.filter === 'varn'}">⚠ Varningar ${nw}</button>
       <select class="chip" id="komp" aria-label="Filtrera på kompetens" ${S.komp ? 'aria-pressed="true"' : ''}><option value="">Kompetens …</option>${kompOpts}</select>
     </div>
-    <div class="list">${rows || `<div class="item muted">Ingen matchar filtret.</div>`}</div>
+    <div class="list">${rows || (m.people.length ? `<div class="item muted">Ingen matchar filtret.</div>` : `<div class="item muted">Inga personer än. Tryck på <b>Ny person</b> för att lägga till den första.</div>`)}</div>
     <button class="btn primary fab" data-a="new">${I.plus}Ny person</button>`;
   return shell('Personal', body, { sub: `${m.people.length} personer` });
 }
@@ -851,6 +850,14 @@ document.addEventListener('click', async e => {
     const g = S.groups.find(x => x.id === b.dataset.g);
     const r = await dialog({ title: g.name, text: `${g.model.people.length} personer · ${g.fileName}`, ok: 'Spara namn', cancel: 'Stäng', html: `<label class="f" for="dlgIn">Gruppens namn<input class="inp" id="dlgIn" value="${esc(g.name)}"></label><button class="btn danger" data-r="2" id="grm">Ta bort gruppen från appen</button>` });
     if (r && r[0] && r[0].trim()) { g.name = r[0].trim(); persistSoon(); render(); }
+  }
+  else if (a === 'newgroup') {
+    const r = await dialog({ title: 'Ny grupp', text: 'Skriv gruppens namn, t.ex. FB, GC eller Steff. Sedan lägger du till personerna en och en.', ok: 'Skapa', html: '<input class="inp" id="dlgIn" aria-label="Gruppens namn" placeholder="Gruppens namn">' });
+    if (!r || !r[0].trim()) return;
+    const model = await loadModel(b64dec(DEMO_B64)); model.people = []; model.fb = []; model.groupName = r[0].trim(); model.dirty = true;
+    S.mode = 'grupp'; S.groups = []; S.model = model; S.fileBytes = b64dec(DEMO_B64); S.fileName = 'Ny grupp (' + model.groupName + ')'; S.demo = false; S.q = ''; S.filter = 'alla'; S.komp = '';
+    if (S.key) { S.persist = true; await persistNow(); S.view = 'list'; } else S.view = 'setpin';
+    render();
   }
   else if (a === 'demo') { try { await loadBytes(b64dec(DEMO_B64), 'Exempel.xlsx', true); } catch (er) { $('#err').textContent = er.message; } }
   else if (a === 'setpin' || a === 'savenewpin') {
