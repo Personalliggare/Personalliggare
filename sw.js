@@ -1,6 +1,6 @@
 // Offline: alla appens filer sparas i telefonen. Ingen data skickas någonstans.
-const CACHE = 'personalliggare-64224924';
-const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+const CACHE = 'personalliggare-56605378';
+const FILES = ['./', './index.html', './pc.html', './manifest.webmanifest', './manifest-pc.webmanifest', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 // Påminnelser i bakgrunden (Android/Chrome): läser bara datum utan namn
