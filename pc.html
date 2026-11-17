@@ -1666,11 +1666,10 @@ function vList() {
       <button class="chip" data-a="filter" data-v="alla" aria-pressed="${S.filter === 'alla'}">Alla ${m.people.length}</button>
       <button class="chip" data-a="filter" data-v="varn" aria-pressed="${S.filter === 'varn'}">⚠ Varningar ${nw}</button>
       <select class="chip" id="komp" aria-label="Filtrera på kompetens" ${S.komp ? 'aria-pressed="true"' : ''}><option value="">Kompetens …</option>${kompOpts}</select>
-      ${m.people.length > 1 ? `<button class="chip" data-a="ordmode">⇅ Ordning</button>` : ''}
     </div>
     <div class="list">${rows || (m.people.length ? `<div class="item muted">Ingen matchar filtret.</div>` : `<div class="item muted">Inga personer än. Tryck på <b>Ny person</b> för att lägga till den första.</div>`)}</div>
     <button class="btn primary fab" data-a="new">${I.plus}Ny person</button>`;
-  return shell('Personal', body, { sub: `${m.people.length} personer` });
+  return shell('Personal', body, { sub: `${m.people.length} personer`, right: m.people.length > 1 ? `<button class="iconbtn" data-a="ordmode" aria-label="Ändra ordning">⇅ Ordning</button>` : '' });
 }
 function vOrder() {
   const m = S.model, n = m.people.length;
